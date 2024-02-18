@@ -1,0 +1,22 @@
+<?php
+App::uses('AppController', 'Controller');
+
+class TodosController extends AppController {
+    public $components = array('Paginator', 'Session');
+
+    public function add() {
+        if ($this->request->is('post')) {
+            $this->Todo->create();
+            if ($this->Todo->save($this->request->data)) {
+                $this->Session->setFlash(__('Todoが登録されました。'));
+                return $this->redirect(array('action' => 'index'));
+            } else {
+                $this->Session->setFlash(__('登録に失敗しました。'));
+            }
+        }
+        $priorities = $this->Todo->Priority->find('list', array(
+            'fields' => array('id', 'priority')
+        ));
+        $this->set(compact('priorities'));
+    }
+}
