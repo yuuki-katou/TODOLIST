@@ -1,0 +1,30 @@
+public function index() {
+    $this->loadModel('Model'); // モデル名に適切なものを設定
+
+    // 表示件数の変更がある場合は、それを取得し設定する
+    $limit = isset($this->request->query['limit']) ? $this->request->query['limit'] : 10;
+
+    // 検索条件がある場合は、それに基づいてデータを取得する
+    if (!empty($this->request->query['search'])) {
+        $search = $this->request->query['search'];
+        $this->paginate = array(
+            'conditions' => array(
+                'OR' => array(
+                    'Model.name LIKE' => '%' . $search . '%',
+                    'Model.detail LIKE' => '%' . $search . '%',
+                ),
+            ),
+            'limit' => $limit,
+            // 他のページネーション設定（例：'order' => array('Model.created' => 'desc')）
+        );
+    } else {
+        // 検索条件がない場合のページネーション設定
+        $this->paginate = array(
+            'limit' => $limit,
+            // デフォルトのページネーション設定
+        );
+    }
+
+    $data = $this->paginate('Model');
+    $this->set(compact('data'));
+}
