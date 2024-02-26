@@ -83,3 +83,5 @@
 	// 	//フロントに返す
 	// 	$this->set('todos', $todos);
 	// }
+
+http://localhost/todos/index?search=&priority_id=&priority_id%5B%5D=1&priority_id%5B%5D=2&priority_id%5B%5D=3&lower_due%5Byear%5D=2024&lower_due%5Bmonth%5D=02&lower_due%5Bday%5D=26&higher_due%5Byear%5D=2024&higher_due%5Bmonth%5D=02&higher_due%5Bday%5D=26&clumn=id&order=ASC
