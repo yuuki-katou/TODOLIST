@@ -1,0 +1,85 @@
+	public function index()
+	{
+		$this->Todo->recursive = 0;
+		$limit = isset($this->request->query['limit']) ? $this->request->query['limit'] : 10;
+
+		$this->loadModel('Priority');
+		$this->set('select1', $this->Priority->find('list', array(
+			'fields' => array('id', 'priority')
+		)));
+
+		$conditions = []; // 条件配列の初期化
+
+		//'get'リクエストを受けた場合の処理
+		if ($this->request->is('get')) {
+			//'priority_id'のクエリが存在することを確認
+			if (isset($this->request->query['priority_id'])) {
+				//'priority_id'のクエリを取得して、'conditionsに'格納
+				$priority_ids = $this->request->query['priority_id'];
+				foreach ($priority_ids as $priority_id) {
+					$conditions['AND']['OR'][] = array('Todo.priority_id' => $priority_id);
+				}
+			}
+			//'lower_due'のクエリが存在することを確認
+			if (isset($this->request->query['lower_due']) && isset($this->request->query['higher_due'])) {
+				$lower_due = $this->request->query['lower_due'];
+				$higher_due = $this->request->query['higher_due'];
+				$conditions['AND'][] = array('Todo.due BETWEEN ? AND ?', $lower_due, $higher_due);
+			} elseif (isset($this->request->query['higher_due'])) {
+				$higher_due = $this->request->query['higher_due'];
+				$conditions['AND'][] = array('higher_due >=' => $higher_due);
+			} elseif (isset($this->request->query['lower_due'])) {
+				$lower_due = $this->request->query['lower_due'];
+				$conditions['AND'][] = array('lower_due =<' => $lower_due);
+			}
+			if (isset($this->request->query['clumn'])) {
+				$clumn = $this->request->query['clumn'];
+				$conditions['AND'][] = array('clumn' => $clumn);
+			}
+			if (isset($this->request->query['order'])) {
+				$order = $this->request->query['order'];
+				$conditions['AND'][] = array('order' => $order);
+			}
+			var_dump($conditions);
+		}
+		// Paginateの条件を常に適用
+		$this->paginate = [
+			'limit' => $limit,
+			'conditions' => $conditions,
+		];
+		$todos = $this->paginate('Todo');
+		$this->set('todos', $todos);
+	}
+
+
+
+
+
+	// 	//'searches'が空でない　かつ　空文字のみではないか　チェック
+	// 	if (!empty($this->request->query['search']) && !empty(trim($this->request->query['search']))) {
+
+	// 		//半角・全角スペースで区切り、配列に格納
+	// 		$searches = preg_split('/[ 　]+/u', $this->request->query['search']);
+	// 		//'conditions'の初期化
+	// 		$conditions = array('OR' => array());
+
+	// 		//searchごとに検索条件を作成する
+	// 		foreach ($searches as $search) {
+	// 			$conditions['AND']['OR'][] = array('Todo.name LIKE' => '%' . $search . '%');
+	// 			$conditions['AND']['OR'][] = array('Todo.detail LIKE' => '%' . $search . '%');
+	// 		}
+	// 		//paginateに検索条件を加える
+	// 		$this->paginate = array(
+	// 			'conditions' => $conditions,
+	// 			'limit' => $limit,
+	// 		);
+	// 	} else {
+	// 		//paginateに検索条件を加える
+	// 		$this->paginate = array(
+	// 			'limit' => $limit,
+	// 		);
+	// 	} //条件に当てはまるデータを取得
+	// 	$todos = $this->paginate('Todo');
+	// 	//フロントに返す
+	// 	$this->set('todos', $todos);
+	// }
