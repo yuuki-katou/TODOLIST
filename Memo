@@ -1,70 +1,116 @@
-public function index() {
-    $this->Todo->recursive = 0;
-    $limit = isset($this->request->query['limit']) ? $this->request->query['limit'] : 10;
+	public function index()
+	{
+		$this->Todo->recursive = 0;
+		$limit = isset($this->request->query['limit']) ? $this->request->query['limit'] : 10;
 
-    $this->loadModel('Priority');
-    $this->set('select1', $this->Priority->find('list', [
-        'fields' => ['id', 'priority']
-    ]));
 
-    $conditions = []; // 条件配列の初期化
+		$this->loadModel('Priority');
+		$this->set('select1', $this->Priority->find('list', array(
+			'fields' => array('id', 'priority')
+		)));
 
-    // タスク名のキーワード検索（OR関係）
-    if (!empty($this->request->query['search'])) {
-        $searches = preg_split('/[ 　]+/u', $this->request->query['search']);
-        foreach ($searches as $search) {
-            $conditions['OR'][] = ['Todo.name LIKE' => "%$search%"];
-            $conditions['OR'][] = ['Todo.detail LIKE' => "%$search%"];
-        }
-    }
+		$wSea = $this->Session->read('index.search');
+		$this->set('wSea', $wSea);
 
-    // 優先度の検索（OR関係）
-    if (!empty($this->request->query['priority_id'])) {
-        $priority_ids = $this->request->query['priority_id'];
-        foreach ($priority_ids as $priority_id) {
-            $priorityConditions['OR'][] = ['Todo.priority_id' => $priority_id];
-        }
-        $conditions['AND'][] = $priorityConditions;
-    }
+		$conditions = []; // 条件配列の初期化
 
-    // 期日範囲の検索
-    if (!empty($this->request->query['lower_due']) && !empty($this->request->query['higher_due'])) {
-        // 下限と上限の両方が指定されている場合
-        $conditions['AND'][] = ['Todo.due BETWEEN ? AND ?' => [$this->request->query['lower_due'], $this->request->query['higher_due']]];
-    } elseif (!empty($this->request->query['lower_due'])) {
-        // 下限のみ指定されている場合
-        $conditions['AND'][] = ['Todo.due >=' => $this->request->query['lower_due']];
-    } elseif (!empty($this->request->query['higher_due'])) {
-        // 上限のみ指定されている場合
-        $conditions['AND'][] = ['Todo.due <=' => $this->request->query['higher_due']];
-    }
+		if ($this->request->is('get')) {
 
-    // 並び替え条件
-    $order = [];
-    if (!empty($this->request->query['sort']) && !empty($this->request->query['order'])) {
-        // 指定された並び替え基準と順序
-        $sortCriteria = [
-            'id' => 'Todo.id',
-            'name' => 'Todo.name',
-            'priority' => 'Todo.priority_id',
-            'due' => 'Todo.due',
-            'created' => 'Todo.created',
-            'modified' => 'Todo.modified'
-        ];
 
-        $sort = $this->request->query['sort'];
-        $orderDirection = $this->request->query['order'];
-        if (array_key_exists($sort, $sortCriteria)) {
-            $order = [$sortCriteria[$sort] => $orderDirection];
-        }
-    }
+			//タスク名のキーワード検索(ORの関係)
+			if (!empty($this->request->query['search'])) {
+				$searches = preg_split('/[ 　]+/u', $this->request->query['search']);
+				foreach ($searches as $search) {
+					$conditions['OR'][] = array('Todo.name LIKE' => '%' . $search . '%');
+					$conditions['OR'][] = array('Todo.detail LIKE' => '%' . $search . '%');
+				}
+			}
 
-    // Paginateの条件を設定
-    $this->paginate = [
-        'limit' => $limit,
-        'conditions' => $conditions,
-        'order' => $order
-    ];
-    $todos = $this->paginate('Todo');
-    $this->set('todos', $todos);
-}
+			//優先度の検索(ORの関係)
+			if (!empty($this->request->query['priority_id'])) {
+				$priorityIds = $this->request->query['priority_id'];
+				foreach ($priorityIds as $priorityId) {
+					$priorityData['OR'][] = array('Todo.priority_id' => $priorityId);
+				}
+				$conditions['AND'][] = $priorityData;
+			}
+
+			// //期日範囲の検索
+			$lowerDue = '';
+			$higherDue = '';
+			if (
+				!empty($this->request->query['lower_due']['year']) &&
+				!empty($this->request->query['lower_due']['month']) &&
+				!empty($this->request->query['lower_due']['day'])
+			) {
+				$yearL = $this->request->query['lower_due']['year'];
+				$monthL = $this->request->query['lower_due']['month'];
+				$dayL = $this->request->query['lower_due']['day'];
+				$lowerDue = sprintf('%s-%s-%s', $yearL, $monthL, $dayL);
+			}
+
+			if (
+				!empty($this->request->query['lower_due']['year']) &&
+				!empty($this->request->query['lower_due']['month']) &&
+				!empty($this->request->query['lower_due']['day'])
+			) {
+				$yearH = $this->request->query['higher_due']['year'];
+				$monthH = $this->request->query['higher_due']['month'];
+				$dayH = $this->request->query['higher_due']['day'];
+				$higherDue = sprintf('%s-%s-%s', $yearH, $monthH, $dayH);
+			}
+
+			if (!empty($lowerDue) && !empty($higherDue)) {
+				//下限と上限の両方が指定されている場合
+				$conditions['AND'][] = array('Todo.due BETWEEN ? AND ?' => array($lowerDue, $higherDue));
+			} elseif (!empty($lowerDue)) {
+				//下限のみが設定されている場合
+				$conditions['AND'][] = array('Todo.due >=' => $lowerDue);
+			} elseif (!empty($higherDue)) {
+				//上限のみが設定されている場合
+				$conditions['AND'][] = array('Todo.due <=' => $higherDue);
+			}
+
+			//並び替え条件
+			$order = [];
+			if (!empty($this->request->query['sort']) && !empty($this->request->query['order'])) {
+				$sortCriteria = [
+					'id' => 'Todo.id',
+					'name' => 'Todo.name',
+					'priority_id' => 'Todo.id',
+					'due' => 'Todo.due',
+					'created' => 'Todo.created',
+					'modified' => 'Todo.modified'
+				];
+
+				$sort = $this->request->query['sort'];
+				$orderDirection = $this->request->query['order'];
+				if (array_key_exists($sort, $sortCriteria)) {
+					$order = [$sortCriteria[$sort] => $orderDirection];
+				}
+			}
+
+			$this->paginate = array(
+				'limit' => $limit,
+				'conditions' => $conditions,
+				'order' => $order,
+			);
+
+
+			// $this->Session->write('session.index_search', $this->request->query['search']);
+			// $this->Session->write('session.index_priority_id', $this->request->query['priority_id']);
+			// $this->Session->write('session.index_lower_due', $this->request->query['lower_due']);
+			// $this->Session->write('session.index_higher_due', $this->request->query['higher_due']);
+			// $this->Session->write('session.index_sort', $this->request->query['sort']);
+			// $this->Session->write('session.index_order', $this->request->query['order']);
+
+			$todos = $this->paginate('Todo');
+			$this->set('todos', $todos);
+		} else {
+			$this->paginate = array(
+				'limit' => $limit,
+			);
+			$todos = $this->paginate('Todo');
+			$this->set('todos', $todos);
+		}
+	}
