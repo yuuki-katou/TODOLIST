@@ -1,3 +1,191 @@
+<div class="todos index">
+
+	<h2><?php echo __('ToDoリスト'); ?></h2>
+	<?php echo $this->Form->create(null, array('type' => 'get', 'url' => 'index'));
+	if ($wSea) {
+		echo $this->Form->input('search', array(
+			'label' => 'キーワード',
+			'value' => $wSea,
+		));
+	} else {
+		echo $this->Form->input('search', array(
+			'label' => 'キーワード',
+		));
+	}
+
+	echo (__('優先度'));
+	if ($wPri) {
+		echo $this->Form->input('priority_id', [
+			"type" => "select",
+			"options" => $select1,
+			'multiple' => 'checkbox',
+			'selected' => $wPri,
+		]);
+	} else {
+		echo $this->Form->input('priority_id', [
+			"type" => "select",
+			"options" => $select1,
+			'multiple' => 'checkbox',
+		]);
+	}
+
+	echo (__('日付範囲'));
+	if ($wLow) {
+		echo $this->Form->input('lower_due', array(
+			'label' => '日付下限',
+			'type' => 'date',
+			'dateFormat' => 'YMD',
+			'monthNames' => false,
+			'empty' => ['year' => '年', 'month' => '月', 'day' => '日'],
+			'selected' => $wLow,
+
+		));
+	} else {
+		echo $this->Form->input('lower_due', array(
+			'label' => '日付下限',
+			'type' => 'date',
+			'dateFormat' => 'YMD',
+			'monthNames' => false,
+			'empty' => ['year' => '年', 'month' => '月', 'day' => '日'],
+		));
+	}
+
+	if ($wHig) {
+		echo $this->Form->input('higher_due', array(
+			'label' => '日付上限',
+			'type' => 'date',
+			'dateFormat' => 'YMD',
+			'monthNames' => false,
+			'empty' => ['year' => '年', 'month' => '月', 'day' => '日'],
+			'selected' => $wHig,
+		));
+	} else {
+		echo $this->Form->input('higher_due', array(
+			'label' => '日付上限',
+			'type' => 'date',
+			'dateFormat' => 'YMD',
+			'monthNames' => false,
+			'empty' => ['year' => '年', 'month' => '月', 'day' => '日'],
+		));
+	}
+
+
+	echo (__('並び替え'));
+	if ($wSor) {
+		echo $this->Form->input('sort', array(
+			'label' => '基準',
+			'type' => 'select',
+			'options' => array(
+				'id' => 'id',
+				'name' => 'タスク名',
+				'priority_id' => '優先度',
+				'due' => '期日',
+				'created' => '登録日',
+				'modified' => '更新日',
+			),
+			'empty' => '-',
+			'selected' => $wSor,
+		));
+	} else {
+		echo $this->Form->input('sort', array(
+			'label' => '基準',
+			'type' => 'select',
+			'options' => array(
+				'id' => 'id',
+				'name' => 'タスク名',
+				'priority_id' => '優先度',
+				'due' => '期日',
+				'created' => '登録日',
+				'modified' => '更新日',
+			),
+			'empty' => '-',
+		));
+	}
+
+	if ($wOrd) {
+		echo $this->Form->input('order', array(
+			'type' => 'select',
+			'options' => array(
+				'ASC' => '昇順',
+				'DESC' => '降順',
+			),
+			'empty' => '-',
+			'selected' => $wOrd,
+		));
+	} else {
+		echo $this->Form->input('order', array(
+			'type' => 'select',
+			'options' => array(
+				'ASC' => '昇順',
+				'DESC' => '降順',
+			),
+			'empty' => '-',
+		));
+	}
+
+
+	echo $this->Form->submit('検索');
+	echo $this->Form->end();
+
+	echo $this->Html->link('10件', array('?' => array_merge($this->request->query, array('limit' => 10))));
+	echo $this->Html->link('20件', array('?' => array_merge($this->request->query, array('limit' => 20))));
+	echo $this->Html->link('50件', array('?' => array_merge($this->request->query, array('limit' => 50))));
+	?>
+	<table cellpadding="0" cellspacing="0">
+		<thead>
+			<tr>
+				<th><?php echo ('id'); ?></th>
+				<th><?php echo ('タスク名'); ?></th>
+				<th><?php echo ('優先度'); ?></th>
+				<th><?php echo ('期日'); ?></th>
+				<th><?php echo ('登録日'); ?></th>
+				<th><?php echo ('更新日'); ?></th>
+				<th class="actions"><?php echo __('アクション'); ?></th>
+			</tr>
+		</thead>
+		<tbody>
+			<?php foreach ($todos as $todo) : ?>
+				<tr>
+					<td><?php echo h($todo['Todo']['id']); ?>&nbsp;</td>
+					<td><?php echo h($todo['Todo']['name']); ?>&nbsp;</td>
+					<td>
+						<?php echo $this->element('priority_label', ['priorityId' => $todo['Todo']['priority_id']]); ?>
+						&nbsp;
+					</td>
+					<td><?php echo h($todo['Todo']['due']); ?>&nbsp;</td>
+					<td><?php echo h($todo['Todo']['created']); ?>&nbsp;</td>
+					<td><?php echo h($todo['Todo']['modified']); ?>&nbsp;</td>
+					<td class="actions">
+						<?php echo $this->Html->link(__('View'), array('action' => 'view', $todo['Todo']['id'])); ?>
+						<?php echo $this->Html->link(__('Edit'), array('action' => 'edit', $todo['Todo']['id'])); ?>
+						<?php echo $this->Form->postLink(__('Delete'), array('action' => 'delete', $todo['Todo']['id']), array('confirm' => __('Are you sure you want to delete # %s?', $todo['Todo']['id']))); ?>
+					</td>
+				</tr>
+			<?php endforeach; ?>
+		</tbody>
+	</table>
+	<p>
+		<?php
+		echo $this->Paginator->counter(array(
+			'format' => __('Page {:page} of {:pages}, showing {:current} records out of {:count} total, starting on record {:start}, ending on {:end}')
+		));
+		?> </p>
+	<div class="paging">
+		<?php
+		echo $this->Paginator->prev('< ' . __('前へ'), array(), null, array('class' => 'prev disabled'));
+		echo $this->Paginator->numbers(array('separator' => ''));
+		echo $this->Paginator->next(__('次へ') . ' >', array(), null, array('class' => 'next disabled'));
+		?>
+	</div>
+</div>
+<div class="actions">
+	<h3><?php echo __('アクション'); ?></h3>
+	<ul>
+		<li><?php echo $this->Html->link(__('新規登録'), array('action' => 'add')); ?></li>
+	</ul>
+</div>
+
+
 	public function index()
 	{
 		$this->Todo->recursive = 0;
@@ -8,9 +196,6 @@
 		$this->set('select1', $this->Priority->find('list', array(
 			'fields' => array('id', 'priority')
 		)));
-
-		$wSea = $this->Session->read('index.search');
-		$this->set('wSea', $wSea);
 
 		$conditions = []; // 条件配列の初期化
 
@@ -24,6 +209,8 @@
 					$conditions['OR'][] = array('Todo.name LIKE' => '%' . $search . '%');
 					$conditions['OR'][] = array('Todo.detail LIKE' => '%' . $search . '%');
 				}
+				//'Session'への書き込み
+				$this->Session->write('index.search', $this->request->query['search']);
 			}
 
 			//優先度の検索(ORの関係)
@@ -33,11 +220,13 @@
 					$priorityData['OR'][] = array('Todo.priority_id' => $priorityId);
 				}
 				$conditions['AND'][] = $priorityData;
+				//'Session'への書き込み
+				$this->Session->write('index.priority', $this->request->query['priority_id']);
 			}
 
 			// //期日範囲の検索
-			$lowerDue = '';
-			$higherDue = '';
+			$lowerDue = null;
+			$higherDue = null;
 			if (
 				!empty($this->request->query['lower_due']['year']) &&
 				!empty($this->request->query['lower_due']['month']) &&
@@ -47,17 +236,19 @@
 				$monthL = $this->request->query['lower_due']['month'];
 				$dayL = $this->request->query['lower_due']['day'];
 				$lowerDue = sprintf('%s-%s-%s', $yearL, $monthL, $dayL);
+				$this->Session->write('index.lower_due', $this->request->query['lower_due']);
 			}
 
 			if (
-				!empty($this->request->query['lower_due']['year']) &&
-				!empty($this->request->query['lower_due']['month']) &&
-				!empty($this->request->query['lower_due']['day'])
+				!empty($this->request->query['higher_due']['year']) &&
+				!empty($this->request->query['higher_due']['month']) &&
+				!empty($this->request->query['higher_due']['day'])
 			) {
 				$yearH = $this->request->query['higher_due']['year'];
 				$monthH = $this->request->query['higher_due']['month'];
 				$dayH = $this->request->query['higher_due']['day'];
 				$higherDue = sprintf('%s-%s-%s', $yearH, $monthH, $dayH);
+				$this->Session->write('index.higher_due', $this->request->query['higher_due']);
 			}
 
 			if (!empty($lowerDue) && !empty($higherDue)) {
@@ -88,22 +279,14 @@
 				if (array_key_exists($sort, $sortCriteria)) {
 					$order = [$sortCriteria[$sort] => $orderDirection];
 				}
+				$this->Session->write('index.sort', $this->request->query['sort']);
+				$this->Session->write('index.order', $this->request->query['order']);
 			}
-
 			$this->paginate = array(
 				'limit' => $limit,
 				'conditions' => $conditions,
 				'order' => $order,
 			);
-
-
-			// $this->Session->write('session.index_search', $this->request->query['search']);
-			// $this->Session->write('session.index_priority_id', $this->request->query['priority_id']);
-			// $this->Session->write('session.index_lower_due', $this->request->query['lower_due']);
-			// $this->Session->write('session.index_higher_due', $this->request->query['higher_due']);
-			// $this->Session->write('session.index_sort', $this->request->query['sort']);
-			// $this->Session->write('session.index_order', $this->request->query['order']);
-
 			$todos = $this->paginate('Todo');
 			$this->set('todos', $todos);
 		} else {
@@ -113,46 +296,16 @@
 			$todos = $this->paginate('Todo');
 			$this->set('todos', $todos);
 		}
+		$wSea = $this->Session->consume('index.search');
+		$wPri = $this->Session->consume('index.priority');
+		$wLow = $this->Session->consume('index.lower_due');
+		$wHig = $this->Session->consume('index.higher_due');
+		$wSor = $this->Session->consume('index.sort');
+		$wOrd = $this->Session->consume('index.order');
+		$this->set('wSea', $wSea);
+		$this->set('wPri', $wPri);
+		$this->set('wLow', $wLow);
+		$this->set('wHig', $wHig);
+		$this->set('wSor', $wSor);
+		$this->set('wOrd', $wOrd);
 	}
-
-
-// File: Model/Todo.php
-
-App::uses('AppModel', 'Model');
-
-class Todo extends AppModel {
-
-    public function validateSearch($data = array()) {
-        $valid = true;
-
-        // キーワード検索の検証
-        if (isset($data['search']) && !is_string($data['search'])) {
-            $valid = false;
-        }
-
-        // 優先度の検証
-        if (isset($data['priority_id']) && !is_array($data['priority_id'])) {
-            $valid = false;
-        }
-
-        // 期日下限の検証
-        if (isset($data['lower_due']) && !$this->validateDate($data['lower_due'])) {
-            $valid = false;
-        }
-
-        // 期日上限の検証
-        if (isset($data['higher_due']) && !$this->validateDate($data['higher_due'])) {
-            $valid = false;
-        }
-
-        // その他の検証ルールをここに追加...
-
-        return $valid;
-    }
-
-    private function validateDate($date) {
-        // 日付の形式検証ロジック
-        // この関数は、$dateが適切な日付形式であるかを検証する
-        return true; // 仮の実装
-    }
-}
