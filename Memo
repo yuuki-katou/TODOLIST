@@ -309,3 +309,41 @@
 		$this->set('wSor', $wSor);
 		$this->set('wOrd', $wOrd);
 	}
+// エラーメッセージ用の配列を初期化
+$errorMessages = [];
+
+// 日付の下限値をチェックし、設定
+if (!empty($this->request->query['lower_due'])) {
+    $lowerDueDate = $this->request->query['lower_due'];
+    $lowerDue = $this->adjustAndValidateDate($lowerDueDate['year'], $lowerDueDate['month'], $lowerDueDate['day']);
+    if (!$lowerDue) {
+        $errorMessages[] = '下限日付が不正です。';
+    }
+} else {
+    $lowerDue = null;
+}
+
+// 日付の上限値をチェックし、設定
+if (!empty($this->request->query['higher_due'])) {
+    $higherDueDate = $this->request->query['higher_due'];
+    $higherDue = $this->adjustAndValidateDate($higherDueDate['year'], $higherDueDate['month'], $higherDueDate['day']);
+    if (!$higherDue) {
+        $errorMessages[] = '上限日付が不正です。';
+    }
+} else {
+    $higherDue = null;
+}
+
+// 日付範囲の矛盾をチェック
+if (!$this->checkDateRange($lowerDue, $higherDue)) {
+    $errorMessages[] = '日付の範囲が矛盾しています。';
+}
+
+// エラーメッセージが存在する場合は、すべて表示
+if (!empty($errorMessages)) {
+    foreach ($errorMessages as $message) {
+        $this->Session->setFlash($message, 'default', array(), 'error');
+    }
+} else {
+    // 検索条件への日付範囲の追加処理...
+}
