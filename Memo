@@ -114,3 +114,45 @@
 			$this->set('todos', $todos);
 		}
 	}
+
+
+// File: Model/Todo.php
+
+App::uses('AppModel', 'Model');
+
+class Todo extends AppModel {
+
+    public function validateSearch($data = array()) {
+        $valid = true;
+
+        // キーワード検索の検証
+        if (isset($data['search']) && !is_string($data['search'])) {
+            $valid = false;
+        }
+
+        // 優先度の検証
+        if (isset($data['priority_id']) && !is_array($data['priority_id'])) {
+            $valid = false;
+        }
+
+        // 期日下限の検証
+        if (isset($data['lower_due']) && !$this->validateDate($data['lower_due'])) {
+            $valid = false;
+        }
+
+        // 期日上限の検証
+        if (isset($data['higher_due']) && !$this->validateDate($data['higher_due'])) {
+            $valid = false;
+        }
+
+        // その他の検証ルールをここに追加...
+
+        return $valid;
+    }
+
+    private function validateDate($date) {
+        // 日付の形式検証ロジック
+        // この関数は、$dateが適切な日付形式であるかを検証する
+        return true; // 仮の実装
+    }
+}
