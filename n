@@ -1,0 +1,58 @@
+// Todoコントローラーのindexアクション内
+
+// 日付チェックと範囲検索の追加処理
+$errorMessage = null; // エラーメッセージ用変数を初期化
+
+// 日付の下限値をチェックし、設定
+if (!empty($this->request->query['lower_due'])) {
+    $lowerDueDate = $this->request->query['lower_due'];
+    $lowerDue = $this->formatDate($lowerDueDate);
+    if (!$this->checkDateExists($lowerDueDate)) {
+        $errorMessage = '下限日付が不正です。';
+    }
+} else {
+    $lowerDue = null;
+}
+
+// 日付の上限値をチェックし、設定
+if (!empty($this->request->query['higher_due'])) {
+    $higherDueDate = $this->request->query['higher_due'];
+    $higherDue = $this->formatDate($higherDueDate);
+    if (!$this->checkDateExists($higherDueDate)) {
+        $errorMessage = '上限日付が不正です。';
+    }
+} else {
+    $higherDue = null;
+}
+
+// 日付範囲の矛盾をチェック
+if ($lowerDue && $higherDue && $lowerDue > $higherDue) {
+    $errorMessage = '日付の範囲が矛盾しています。';
+}
+
+// エラーメッセージがある場合はセット
+if ($errorMessage) {
+    $this->Session->setFlash($errorMessage, 'default', array(), 'error');
+} else {
+    // 検索条件への日付範囲の追加
+    if ($lowerDue && $higherDue) {
+        $conditions['AND'][] = array('Todo.due BETWEEN ? AND ?' => array($lowerDue, $higherDue));
+    } elseif ($lowerDue) {
+        $conditions['AND'][] = array('Todo.due >=' => $lowerDue);
+    } elseif ($higherDue) {
+        $conditions['AND'][] = array('Todo.due <=' => $higherDue);
+    }
+}
+
+// 日付フォーマット関数
+private function formatDate($dateArray) {
+    return sprintf('%s-%s-%s', $dateArray['year'] ?? date('Y'), $dateArray['month'] ?? '01', $dateArray['day'] ?? '01');
+}
+
+// 日付の存在チェック関数
+private function checkDateExists($dateArray) {
+    $year = $dateArray['year'] ?? null;
+    $month = $dateArray['month'] ?? 1;
+    $day = $dateArray['day'] ?? 1;
+    return checkdate((int)$month, (int)$day, (int)$year);
+}
