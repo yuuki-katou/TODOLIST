@@ -1,0 +1,90 @@
+	public function add()
+	{
+		//'Priorities'テーブルから'id'と'priority'をリストで取得し、フロントに返す。
+		$this->loadModel('Priority');
+		$this->set('select1', $this->Priority->find('list', array(
+			'fields' => array('id', 'priority')
+		)));
+
+		//todoインスタンスの新規作成
+		$todo = $this->Todo->create();
+
+		//セッションを確認し、存在する場合は、'todo'へ格納する
+		$todo = $this->Session->consume('session.todo_add');
+
+		//todoインスタンスのセット
+		$this->set('todo', $todo);
+
+		//'post'リクエストを受けた場合の処理
+		if ($this->request->is('post')) {
+			//formの情報を取得する
+			$todo = $this->Todo->set($this->request->data);
+
+			$todo['Todo']['due'] = $this->dateFormat($todo);
+
+			//バリデーションチェック
+			if ($this->Todo->validates()) {
+				$token = sha1(uniqid(mt_rand(), true));
+				$this->Session->write('Form.token', $token);
+				$this->Session->write('session.todo_add', $todo);
+				return $this->redirect(array('action' => 'add_confirm'));
+			} else {
+				$this->Flash->error('入力内容を確認してください');
+			}
+		}
+	}
+
+	/**
+	 *登録確認処理
+	 */
+	public function add_confirm()
+	{
+		if (!$this->Session->check('Form.token')) {
+			//セッションが確認できない場合、'add'へリダイレクトする
+			if (!$this->Session->check('session.todo_add')) {
+				return $this->redirect(['action' => 'add']);
+			}
+			//セッションが確認できた場合、'todo'にセットする
+			else {
+				$todo = $this->Session->read('session.todo_add');
+				$this->set('todo', $todo);
+			}
+			//'post'リクエストを取得
+			if ($this->request->is('post')) {
+
+				//'action'の値を取得
+				$action = $this->request->data['action'];
+
+				//リダイレクト先の分岐　'modify'：add 'register':add_complete
+				if ($action === 'modify') {
+					return $this->redirect(['action' => 'add']);
+				} elseif ($action === 'register') {
+					return $this->redirect(['action' => 'add_complete']);
+				}
+			}
+		} else {
+		}
+	}
+
+	/**
+	 * 登録完了処理
+	 */
+	public function add_complete()
+	{
+		if ($this->Session->check('session.todo_add')) {
+
+			//セッションが存在する場合、'todo'に情報を格納する
+			$todo = $this->Session->consume('session.todo_add');
+
+			//タスク情報が保存された場合の処理
+			if ($this->Todo->save($todo)) {
+				$this->Flash->success(__('タスクは正常に登録されました'));
+				return $this->redirect(array('action' => 'index'));
+			}
+			//タスク情報が保存されなかった場合の処理
+			else {
+				$this->Flash->error(__('タスクは正常に登録することができませんでした。入力項目を見直し、再試行してください'));
+				return $this->redirect(array('action' => 'add'));
+			}
+		}
+	}
