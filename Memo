@@ -411,3 +411,85 @@ private function checkDateExists($dateArray) {
     $day = $dateArray['day'] ?? 1;
     return checkdate((int)$month, (int)$day, (int)$year);
 }
+public function add() {
+    $this->loadModel('Priority');
+    $this->set('select1', $this->Priority->find('list', [
+        'fields' => ['id', 'priority']
+    ]));
+
+    // 一意のトークンを生成し、セッションに保存
+    $token = sha1(uniqid(mt_rand(), true));
+    $this->Session->write('Form.token', $token);
+    // トークンをビューに渡す
+    $this->set('token', $token);
+
+    // todoインスタンスの新規作成またはセッションからの読み込み
+    $todo = $this->Session->read('session.todo_add') ?: $this->Todo->create();
+    $this->set('todo', $todo);
+
+    if ($this->request->is('post')) {
+        if ($this->request->data('token') === $this->Session->read('Form.token')) {
+            // トークン一致時、フォームデータをセッションに保存
+            $todo = $this->Todo->set($this->request->data);
+            $todo['Todo']['due'] = $this->dateFormat($todo);
+            if ($this->Todo->validates()) {
+                $this->Session->write('session.todo_add', $todo);
+                // フローステップをセッションに記録
+                $this->Session->write('Form.step', 'confirm');
+                return $this->redirect(['action' => 'add_confirm']);
+            } else {
+                $this->Flash->error('入力内容を確認してください。');
+            }
+        } else {
+            $this->Flash->error('不正なアクセスです。');
+        }
+    }
+}
+
+public function add_confirm() {
+    // トークンとフローステップの確認
+    if (!$this->Session->check('Form.token') || $this->Session->read('Form.step') !== 'confirm') {
+        $this->Flash->error('セッションが無効または期限切れです。');
+        return $this->redirect(['action' => 'add']);
+    }
+
+    $todo = $this->Session->read('session.todo_add');
+    $this->set('todo', $todo);
+
+    if ($this->request->is('post')) {
+        $action = $this->request->data['action'];
+        if ($action === 'modify') {
+            // 修正の場合は、フローステップをリセット
+            $this->Session->delete('Form.step');
+            return $this->redirect(['action' => 'add']);
+        } elseif ($action === 'register') {
+            // 登録を進める場合は、フローステップを更新
+            $this->Session->write('Form.step', 'complete');
+            return $this->redirect(['action' => 'add_complete']);
+        }
+    }
+}
+
+public function add_complete() {
+    // フローステップの確認とセッションデータの存在を確認
+    if ($this->Session->read('Form.step') !== 'complete' || !$this->Session->check('session.todo_add')) {
+        $this->Flash->error('不正なアクセスまたはセッションが期限切れです。');
+        $this->Session->delete('Form.step');
+        $this->Session->delete('session.todo_add');
+        return $this->redirect(['action' => 'add']);
+    }
+
+    $todo = $this->Session->consume('session.todo_add');
+    if ($this->Todo->save($todo)) {
+        $this->Flash->success(__('タスクは正常に登録されました。'));
+        // 完了後は、フローステップをクリア
+        $this->Session->delete('Form.step');
+        return $this->redirect(['action' => 'index']);
+    } else {
+        $this->Flash->error(__('タスクは正常に登録することができませんでした。入力項目を見直し、再試行してください。'));
+        return $this->redirect(['action' => 'add']);
+    }
+}
+```
+
+この実装では、セッションを使ってフォームのデータとフローのステップを管理しています。`Form.step`を使って、ユーザーが正しい順序でページを進んでいるかをチェックしており、不正なアクセスがあった場合やセッションが期限切れの場合には適切に処理を行い、ユーザーを適切なページにリダイレクトします。これにより、要件に基づいた安全なユーザーフローを実現しています。
