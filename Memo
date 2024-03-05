@@ -1,495 +1,87 @@
-<div class="todos index">
-
-	<h2><?php echo __('ToDoリスト'); ?></h2>
-	<?php echo $this->Form->create(null, array('type' => 'get', 'url' => 'index'));
-	if ($wSea) {
-		echo $this->Form->input('search', array(
-			'label' => 'キーワード',
-			'value' => $wSea,
-		));
-	} else {
-		echo $this->Form->input('search', array(
-			'label' => 'キーワード',
-		));
-	}
-
-	echo (__('優先度'));
-	if ($wPri) {
-		echo $this->Form->input('priority_id', [
-			"type" => "select",
-			"options" => $select1,
-			'multiple' => 'checkbox',
-			'selected' => $wPri,
-		]);
-	} else {
-		echo $this->Form->input('priority_id', [
-			"type" => "select",
-			"options" => $select1,
-			'multiple' => 'checkbox',
-		]);
-	}
-
-	echo (__('日付範囲'));
-	if ($wLow) {
-		echo $this->Form->input('lower_due', array(
-			'label' => '日付下限',
-			'type' => 'date',
-			'dateFormat' => 'YMD',
-			'monthNames' => false,
-			'empty' => ['year' => '年', 'month' => '月', 'day' => '日'],
-			'selected' => $wLow,
-
-		));
-	} else {
-		echo $this->Form->input('lower_due', array(
-			'label' => '日付下限',
-			'type' => 'date',
-			'dateFormat' => 'YMD',
-			'monthNames' => false,
-			'empty' => ['year' => '年', 'month' => '月', 'day' => '日'],
-		));
-	}
-
-	if ($wHig) {
-		echo $this->Form->input('higher_due', array(
-			'label' => '日付上限',
-			'type' => 'date',
-			'dateFormat' => 'YMD',
-			'monthNames' => false,
-			'empty' => ['year' => '年', 'month' => '月', 'day' => '日'],
-			'selected' => $wHig,
-		));
-	} else {
-		echo $this->Form->input('higher_due', array(
-			'label' => '日付上限',
-			'type' => 'date',
-			'dateFormat' => 'YMD',
-			'monthNames' => false,
-			'empty' => ['year' => '年', 'month' => '月', 'day' => '日'],
-		));
-	}
-
-
-	echo (__('並び替え'));
-	if ($wSor) {
-		echo $this->Form->input('sort', array(
-			'label' => '基準',
-			'type' => 'select',
-			'options' => array(
-				'id' => 'id',
-				'name' => 'タスク名',
-				'priority_id' => '優先度',
-				'due' => '期日',
-				'created' => '登録日',
-				'modified' => '更新日',
-			),
-			'empty' => '-',
-			'selected' => $wSor,
-		));
-	} else {
-		echo $this->Form->input('sort', array(
-			'label' => '基準',
-			'type' => 'select',
-			'options' => array(
-				'id' => 'id',
-				'name' => 'タスク名',
-				'priority_id' => '優先度',
-				'due' => '期日',
-				'created' => '登録日',
-				'modified' => '更新日',
-			),
-			'empty' => '-',
-		));
-	}
-
-	if ($wOrd) {
-		echo $this->Form->input('order', array(
-			'type' => 'select',
-			'options' => array(
-				'ASC' => '昇順',
-				'DESC' => '降順',
-			),
-			'empty' => '-',
-			'selected' => $wOrd,
-		));
-	} else {
-		echo $this->Form->input('order', array(
-			'type' => 'select',
-			'options' => array(
-				'ASC' => '昇順',
-				'DESC' => '降順',
-			),
-			'empty' => '-',
-		));
-	}
-
-
-	echo $this->Form->submit('検索');
-	echo $this->Form->end();
-
-	echo $this->Html->link('10件', array('?' => array_merge($this->request->query, array('limit' => 10))));
-	echo $this->Html->link('20件', array('?' => array_merge($this->request->query, array('limit' => 20))));
-	echo $this->Html->link('50件', array('?' => array_merge($this->request->query, array('limit' => 50))));
-	?>
-	<table cellpadding="0" cellspacing="0">
-		<thead>
-			<tr>
-				<th><?php echo ('id'); ?></th>
-				<th><?php echo ('タスク名'); ?></th>
-				<th><?php echo ('優先度'); ?></th>
-				<th><?php echo ('期日'); ?></th>
-				<th><?php echo ('登録日'); ?></th>
-				<th><?php echo ('更新日'); ?></th>
-				<th class="actions"><?php echo __('アクション'); ?></th>
-			</tr>
-		</thead>
-		<tbody>
-			<?php foreach ($todos as $todo) : ?>
-				<tr>
-					<td><?php echo h($todo['Todo']['id']); ?>&nbsp;</td>
-					<td><?php echo h($todo['Todo']['name']); ?>&nbsp;</td>
-					<td>
-						<?php echo $this->element('priority_label', ['priorityId' => $todo['Todo']['priority_id']]); ?>
-						&nbsp;
-					</td>
-					<td><?php echo h($todo['Todo']['due']); ?>&nbsp;</td>
-					<td><?php echo h($todo['Todo']['created']); ?>&nbsp;</td>
-					<td><?php echo h($todo['Todo']['modified']); ?>&nbsp;</td>
-					<td class="actions">
-						<?php echo $this->Html->link(__('View'), array('action' => 'view', $todo['Todo']['id'])); ?>
-						<?php echo $this->Html->link(__('Edit'), array('action' => 'edit', $todo['Todo']['id'])); ?>
-						<?php echo $this->Form->postLink(__('Delete'), array('action' => 'delete', $todo['Todo']['id']), array('confirm' => __('Are you sure you want to delete # %s?', $todo['Todo']['id']))); ?>
-					</td>
-				</tr>
-			<?php endforeach; ?>
-		</tbody>
-	</table>
-	<p>
-		<?php
-		echo $this->Paginator->counter(array(
-			'format' => __('Page {:page} of {:pages}, showing {:current} records out of {:count} total, starting on record {:start}, ending on {:end}')
-		));
-		?> </p>
-	<div class="paging">
-		<?php
-		echo $this->Paginator->prev('< ' . __('前へ'), array(), null, array('class' => 'prev disabled'));
-		echo $this->Paginator->numbers(array('separator' => ''));
-		echo $this->Paginator->next(__('次へ') . ' >', array(), null, array('class' => 'next disabled'));
-		?>
-	</div>
-</div>
-<div class="actions">
-	<h3><?php echo __('アクション'); ?></h3>
-	<ul>
-		<li><?php echo $this->Html->link(__('新規登録'), array('action' => 'add')); ?></li>
-	</ul>
-</div>
-
-
-	public function index()
+	/**
+	 * 新規登録処理
+	 * 
+	 */
+	public function add()
 	{
-		$this->Todo->recursive = 0;
-		$limit = isset($this->request->query['limit']) ? $this->request->query['limit'] : 10;
-
-
+		//'Priorities'テーブルから'id'と'priority'をリストで取得し、フロントに返す。
 		$this->loadModel('Priority');
 		$this->set('select1', $this->Priority->find('list', array(
 			'fields' => array('id', 'priority')
 		)));
 
-		$conditions = []; // 条件配列の初期化
-
-		if ($this->request->is('get')) {
-
-
-			//タスク名のキーワード検索(ORの関係)
-			if (!empty($this->request->query['search'])) {
-				$searches = preg_split('/[ 　]+/u', $this->request->query['search']);
-				foreach ($searches as $search) {
-					$conditions['OR'][] = array('Todo.name LIKE' => '%' . $search . '%');
-					$conditions['OR'][] = array('Todo.detail LIKE' => '%' . $search . '%');
-				}
-				//'Session'への書き込み
-				$this->Session->write('index.search', $this->request->query['search']);
-			}
-
-			//優先度の検索(ORの関係)
-			if (!empty($this->request->query['priority_id'])) {
-				$priorityIds = $this->request->query['priority_id'];
-				foreach ($priorityIds as $priorityId) {
-					$priorityData['OR'][] = array('Todo.priority_id' => $priorityId);
-				}
-				$conditions['AND'][] = $priorityData;
-				//'Session'への書き込み
-				$this->Session->write('index.priority', $this->request->query['priority_id']);
-			}
-
-			// //期日範囲の検索
-			$lowerDue = null;
-			$higherDue = null;
-			if (
-				!empty($this->request->query['lower_due']['year']) &&
-				!empty($this->request->query['lower_due']['month']) &&
-				!empty($this->request->query['lower_due']['day'])
-			) {
-				$yearL = $this->request->query['lower_due']['year'];
-				$monthL = $this->request->query['lower_due']['month'];
-				$dayL = $this->request->query['lower_due']['day'];
-				$lowerDue = sprintf('%s-%s-%s', $yearL, $monthL, $dayL);
-				$this->Session->write('index.lower_due', $this->request->query['lower_due']);
-			}
-
-			if (
-				!empty($this->request->query['higher_due']['year']) &&
-				!empty($this->request->query['higher_due']['month']) &&
-				!empty($this->request->query['higher_due']['day'])
-			) {
-				$yearH = $this->request->query['higher_due']['year'];
-				$monthH = $this->request->query['higher_due']['month'];
-				$dayH = $this->request->query['higher_due']['day'];
-				$higherDue = sprintf('%s-%s-%s', $yearH, $monthH, $dayH);
-				$this->Session->write('index.higher_due', $this->request->query['higher_due']);
-			}
-
-			if (!empty($lowerDue) && !empty($higherDue)) {
-				//下限と上限の両方が指定されている場合
-				$conditions['AND'][] = array('Todo.due BETWEEN ? AND ?' => array($lowerDue, $higherDue));
-			} elseif (!empty($lowerDue)) {
-				//下限のみが設定されている場合
-				$conditions['AND'][] = array('Todo.due >=' => $lowerDue);
-			} elseif (!empty($higherDue)) {
-				//上限のみが設定されている場合
-				$conditions['AND'][] = array('Todo.due <=' => $higherDue);
-			}
-
-			//並び替え条件
-			$order = [];
-			if (!empty($this->request->query['sort']) && !empty($this->request->query['order'])) {
-				$sortCriteria = [
-					'id' => 'Todo.id',
-					'name' => 'Todo.name',
-					'priority_id' => 'Todo.id',
-					'due' => 'Todo.due',
-					'created' => 'Todo.created',
-					'modified' => 'Todo.modified'
-				];
-
-				$sort = $this->request->query['sort'];
-				$orderDirection = $this->request->query['order'];
-				if (array_key_exists($sort, $sortCriteria)) {
-					$order = [$sortCriteria[$sort] => $orderDirection];
-				}
-				$this->Session->write('index.sort', $this->request->query['sort']);
-				$this->Session->write('index.order', $this->request->query['order']);
-			}
-			$this->paginate = array(
-				'limit' => $limit,
-				'conditions' => $conditions,
-				'order' => $order,
-			);
-			$todos = $this->paginate('Todo');
-			$this->set('todos', $todos);
+		if (!$this->Session->check('session.todo_add') || !$this->request->is('post')) {
+			//todoインスタンスの新規作成
+			$todo = $this->Todo->create();
 		} else {
-			$this->paginate = array(
-				'limit' => $limit,
-			);
-			$todos = $this->paginate('Todo');
-			$this->set('todos', $todos);
+			//セッションを確認し、存在する場合は、'todo'へ格納する
+			$todo = $this->Session->consume('session.todo_add');
 		}
-		$wSea = $this->Session->consume('index.search');
-		$wPri = $this->Session->consume('index.priority');
-		$wLow = $this->Session->consume('index.lower_due');
-		$wHig = $this->Session->consume('index.higher_due');
-		$wSor = $this->Session->consume('index.sort');
-		$wOrd = $this->Session->consume('index.order');
-		$this->set('wSea', $wSea);
-		$this->set('wPri', $wPri);
-		$this->set('wLow', $wLow);
-		$this->set('wHig', $wHig);
-		$this->set('wSor', $wSor);
-		$this->set('wOrd', $wOrd);
+		//todoインスタンスのセット
+		$this->set('todo', $todo);
+
+		//'post'リクエストを受けた場合の処理
+		if ($this->request->is('post')) {
+			//formの情報を取得する
+			$todo = $this->Todo->set($this->request->data);
+
+			$todo['Todo']['due'] = $this->dateFormat($todo);
+
+			//バリデーションチェック
+			if ($this->Todo->validates()) {
+				$this->Session->write('session.todo_add', $todo);
+				return $this->redirect(array('action' => 'add_confirm'));
+			} else {
+				$this->Flash->error('入力内容を確認してください');
+			}
+		}
 	}
-// エラーメッセージ用の配列を初期化
-$errorMessages = [];
 
-// 日付の下限値をチェックし、設定
-if (!empty($this->request->query['lower_due'])) {
-    $lowerDueDate = $this->request->query['lower_due'];
-    $lowerDue = $this->adjustAndValidateDate($lowerDueDate['year'], $lowerDueDate['month'], $lowerDueDate['day']);
-    if (!$lowerDue) {
-        $errorMessages[] = '下限日付が不正です。';
-    }
-} else {
-    $lowerDue = null;
-}
+	/**
+	 *登録確認処理
+	 */
+	public function add_confirm()
+	{
+		//セッションが確認できない場合、かつリクエストが'post'以外の場合、リダイレクトする
+		if (!$this->Session->check('session.todo_add') && !$this->request->is('post')) {
+			return $this->redirect(['action' => 'add']);
+		} else {
+			$todo = $this->Session->read('session.todo_add');
+			$this->set('todo', $todo);
 
-// 日付の上限値をチェックし、設定
-if (!empty($this->request->query['higher_due'])) {
-    $higherDueDate = $this->request->query['higher_due'];
-    $higherDue = $this->adjustAndValidateDate($higherDueDate['year'], $higherDueDate['month'], $higherDueDate['day']);
-    if (!$higherDue) {
-        $errorMessages[] = '上限日付が不正です。';
-    }
-} else {
-    $higherDue = null;
-}
+			//'action'の値を取得
+			$action = $this->request->data['action'];
 
-// 日付範囲の矛盾をチェック
-if (!$this->checkDateRange($lowerDue, $higherDue)) {
-    $errorMessages[] = '日付の範囲が矛盾しています。';
-}
+			//リダイレクト先の分岐　'modify'：add 'register':add_complete
+			if ($action === 'modify') {
+				return $this->redirect(['action' => 'add']);
+			} elseif ($action === 'register') {
+				return $this->redirect(['action' => 'add_complete']);
+			}
+		}
+	}
 
-// エラーメッセージが存在する場合は、すべて表示
-if (!empty($errorMessages)) {
-    foreach ($errorMessages as $message) {
-        $this->Session->setFlash($message, 'default', array(), 'error');
-    }
-} else {
-    // 検索条件への日付範囲の追加処理...
-}
+	/**
+	 * 登録完了処理
+	 */
+	public function add_complete()
+	{
+		if ($this->Session->check('session.todo_add') && !$this->request->is('post')) {
 
+			//セッションが存在する場合、'todo'に情報を格納する
+			$todo = $this->Session->consume('session.todo_add');
 
-
-
-
-
-// Todoコントローラーのindexアクション内
-
-// 日付チェックと範囲検索の追加処理
-$errorMessage = null; // エラーメッセージ用変数を初期化
-
-// 日付の下限値をチェックし、設定
-if (!empty($this->request->query['lower_due'])) {
-    $lowerDueDate = $this->request->query['lower_due'];
-    $lowerDue = $this->formatDate($lowerDueDate);
-    if (!$this->checkDateExists($lowerDueDate)) {
-        $errorMessage = '下限日付が不正です。';
-    }
-} else {
-    $lowerDue = null;
-}
-
-// 日付の上限値をチェックし、設定
-if (!empty($this->request->query['higher_due'])) {
-    $higherDueDate = $this->request->query['higher_due'];
-    $higherDue = $this->formatDate($higherDueDate);
-    if (!$this->checkDateExists($higherDueDate)) {
-        $errorMessage = '上限日付が不正です。';
-    }
-} else {
-    $higherDue = null;
-}
-
-// 日付範囲の矛盾をチェック
-if ($lowerDue && $higherDue && $lowerDue > $higherDue) {
-    $errorMessage = '日付の範囲が矛盾しています。';
-}
-
-// エラーメッセージがある場合はセット
-if ($errorMessage) {
-    $this->Session->setFlash($errorMessage, 'default', array(), 'error');
-} else {
-    // 検索条件への日付範囲の追加
-    if ($lowerDue && $higherDue) {
-        $conditions['AND'][] = array('Todo.due BETWEEN ? AND ?' => array($lowerDue, $higherDue));
-    } elseif ($lowerDue) {
-        $conditions['AND'][] = array('Todo.due >=' => $lowerDue);
-    } elseif ($higherDue) {
-        $conditions['AND'][] = array('Todo.due <=' => $higherDue);
-    }
-}
-
-// 日付フォーマット関数
-private function formatDate($dateArray) {
-    return sprintf('%s-%s-%s', $dateArray['year'] ?? date('Y'), $dateArray['month'] ?? '01', $dateArray['day'] ?? '01');
-}
-
-// 日付の存在チェック関数
-private function checkDateExists($dateArray) {
-    $year = $dateArray['year'] ?? null;
-    $month = $dateArray['month'] ?? 1;
-    $day = $dateArray['day'] ?? 1;
-    return checkdate((int)$month, (int)$day, (int)$year);
-}
-public function add() {
-    $this->loadModel('Priority');
-    $this->set('select1', $this->Priority->find('list', [
-        'fields' => ['id', 'priority']
-    ]));
-
-    // 一意のトークンを生成し、セッションに保存
-    $token = sha1(uniqid(mt_rand(), true));
-    $this->Session->write('Form.token', $token);
-    // トークンをビューに渡す
-    $this->set('token', $token);
-
-    // todoインスタンスの新規作成またはセッションからの読み込み
-    $todo = $this->Session->read('session.todo_add') ?: $this->Todo->create();
-    $this->set('todo', $todo);
-
-    if ($this->request->is('post')) {
-        if ($this->request->data('token') === $this->Session->read('Form.token')) {
-            // トークン一致時、フォームデータをセッションに保存
-            $todo = $this->Todo->set($this->request->data);
-            $todo['Todo']['due'] = $this->dateFormat($todo);
-            if ($this->Todo->validates()) {
-                $this->Session->write('session.todo_add', $todo);
-                // フローステップをセッションに記録
-                $this->Session->write('Form.step', 'confirm');
-                return $this->redirect(['action' => 'add_confirm']);
-            } else {
-                $this->Flash->error('入力内容を確認してください。');
-            }
-        } else {
-            $this->Flash->error('不正なアクセスです。');
-        }
-    }
-}
-
-public function add_confirm() {
-    // トークンとフローステップの確認
-    if (!$this->Session->check('Form.token') || $this->Session->read('Form.step') !== 'confirm') {
-        $this->Flash->error('セッションが無効または期限切れです。');
-        return $this->redirect(['action' => 'add']);
-    }
-
-    $todo = $this->Session->read('session.todo_add');
-    $this->set('todo', $todo);
-
-    if ($this->request->is('post')) {
-        $action = $this->request->data['action'];
-        if ($action === 'modify') {
-            // 修正の場合は、フローステップをリセット
-            $this->Session->delete('Form.step');
-            return $this->redirect(['action' => 'add']);
-        } elseif ($action === 'register') {
-            // 登録を進める場合は、フローステップを更新
-            $this->Session->write('Form.step', 'complete');
-            return $this->redirect(['action' => 'add_complete']);
-        }
-    }
-}
-
-public function add_complete() {
-    // フローステップの確認とセッションデータの存在を確認
-    if ($this->Session->read('Form.step') !== 'complete' || !$this->Session->check('session.todo_add')) {
-        $this->Flash->error('不正なアクセスまたはセッションが期限切れです。');
-        $this->Session->delete('Form.step');
-        $this->Session->delete('session.todo_add');
-        return $this->redirect(['action' => 'add']);
-    }
-
-    $todo = $this->Session->consume('session.todo_add');
-    if ($this->Todo->save($todo)) {
-        $this->Flash->success(__('タスクは正常に登録されました。'));
-        // 完了後は、フローステップをクリア
-        $this->Session->delete('Form.step');
-        return $this->redirect(['action' => 'index']);
-    } else {
-        $this->Flash->error(__('タスクは正常に登録することができませんでした。入力項目を見直し、再試行してください。'));
-        return $this->redirect(['action' => 'add']);
-    }
-}
-```
-
-この実装では、セッションを使ってフォームのデータとフローのステップを管理しています。`Form.step`を使って、ユーザーが正しい順序でページを進んでいるかをチェックしており、不正なアクセスがあった場合やセッションが期限切れの場合には適切に処理を行い、ユーザーを適切なページにリダイレクトします。これにより、要件に基づいた安全なユーザーフローを実現しています。
+			//タスク情報が保存された場合の処理
+			if ($this->Todo->save($todo)) {
+				$this->Flash->success(__('タスクは正常に登録されました'));
+				return $this->redirect(array('action' => 'index'));
+			}
+			//タスク情報が保存されなかった場合の処理
+			else {
+				$this->Flash->error(__('タスクは正常に登録することができませんでした。入力項目を見直し、再試行してください'));
+				return $this->redirect(array('action' => 'add'));
+			}
+		} else {
+			return $this->redirect(['action' => 'add']);
+		}
+	}
