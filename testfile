@@ -1,70 +1,48 @@
-リマインダ
-・通知時刻
-・繰り返し（毎日、平日、週末、2週間ごと、毎週、毎月、3か月、6か月、毎年）
-・終了日（特定の日付まで　タスクのステータスが完了以外の場合（未完了、確認中））
-
-
-
-■コマンド
-【処理内容】
-通知Flag =flase
 for(tasks as task){
-
-	if(次回通知時刻 && 繰り返し が存在する場合){
+	if(通知時刻 && 繰り返し が存在する場合){
 	swtich(){
 		case 毎日
-			次回通知時刻 == 現時刻
+			日付が現在の日付と同じかそれ以降か && 時刻が現在の時刻と一致する場合 
 			通知Flag = True;
-			次回通知時刻 += 1;
 			break;
 
 		case 平日
-			次回通知時刻 == 平日
+			現在の日付が平日 && 時刻が現在の時刻と一致する場合
 			通知Flag = True
-			次回通知時刻 += 1
 			break;
 
 		case 週末
-			次回通知時刻 == 週末
+			現在の日付が週末 && 時刻が現在の時間と一致する場合
 			通知Flag = True
-			次回通知時刻 +=1;
 			break;
 
 		case 2週間ごと
-			現時刻 == 次回通知時刻
+			現時刻と通知時刻を引く
+			出した差分が14で割り切れる && 時刻が現在の時間と一致する場合
 			通知Flag = true;
-			次回通知時刻 += 二週間後
 			break;
 
 		case 毎週
-			現時刻 == 次回通知時刻
+			現時刻と通知時刻を引く
+			出した差分が7で割り切れる && 時刻が現在の時間と一致する場合 
 			通知Flag = True
-			次回通知時刻 += 7
 			break;
 
-		case 3kか月
-			現時刻 == 次回通知時刻
-			通知Flag = True
-			次回通知時刻 += ３か月
-			break;
+        case 毎月
+            通知Flag = 判定関数(引数:通知時刻,1)
+            break;
+            
+		case 3か月
+            通知Flag = 判定関数(引数:通知時刻,3)
+            break;
 
 		case 6か月
-			現時刻 == 次回通知時刻
-			通知Flag = True
-			次回通知時刻 += 6か月
-			break;
-
-		case 毎月
-			現時刻 == 次回通知時刻
-			通知Flag = True
-			次回通知時刻 += 30
-			break;
+			通知Flag = 判定関数(引数:通知時刻6)
+            break;
 
 		case 毎年
-			現時刻 == 次回通知時刻
-			通知Flag = True
-			次回通知時刻 += 1
-			break;
+            通知Flag = 判定関数(引数:通知時刻、12)
+            break;
 	}
 
 	switch(終了日){
@@ -72,12 +50,9 @@ for(tasks as task){
 			特定の日付が過去の場合
 			通知Flag =　Flase;
 		    break;
-		case:タスクのステータス
-			ステータスが完了の場合
-			通知Flag = Flase;
 	}
 
-}次回通知時刻が存在する場合処理を実行{
+}通知時刻が存在する場合処理を実行{
 	次回通知時刻が現時刻と合致する場合{
 		通知Flag = True
 	}
@@ -87,12 +62,14 @@ if(通知Flag){
 	メールを送信します
 }
 
----- 
 
+function shouldNotify($firstNotificationDate, $repeatMonths) {
+    $now = Carbon::now();
+    $monthsDifference = ($now->year - $firstNotificationDate->year) * 12 + ($now->month - $firstNotificationDate->month);
+    $nextNotificationDate = $firstNotificationDate->copy()->addMonthsNoOverflow($monthsDifference - ($monthsDifference % $repeatMonths));
+    
+    return $now->eq($nextNotificationDate);
 }
-
-●取得したデータの通知日時を引数にメールを送信する
-
 
 
 
