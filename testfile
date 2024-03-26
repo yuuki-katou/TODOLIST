@@ -4,11 +4,9 @@ try{
 	取得条件：tasksテーブルからは、通知日時が設定されている && ステータスが「完了」以外 && 通知日時の時刻が現時間と一致する
 	データの関連付け：tasksテーブル（id,users_id,title,reminder_datetime,repeat_pattern_id,reminder_end_datetime）
 　　　　：usersテーブル（id,name,email）
-}catch{
-	
+}catch(Exception $e){
+	throw new Exception("エラーが発生しました",0,$e);
 }
-
-
 
 for(tasks as task){
 	if(通知時刻 && 繰り返し が存在する場合){
@@ -68,10 +66,14 @@ for(tasks as task){
 		通知Flag = True
 	}
 }
-
-if(通知Flag){
+try{
+	if(通知Flag){
 	メールを送信します
+	}
+}catch(Exception $e){
+	throw new Exception("エラーが発生しました",0,$e);
 }
+
 
 function shouldNotify($firstNotificationDate, $repeatMonths) {
     $now = Carbon::now();
