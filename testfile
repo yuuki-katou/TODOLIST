@@ -1,3 +1,7 @@
+tasks = tasksテーブルとusersテーブルからデータを取得する。
+取得条件：tasksテーブルからは、通知日時が設定されている && ステータスが「完了」以外 && 通知日時の時刻が現時間と一致する
+データの関連付け：tasksテーブル（id,users_id,title,reminder_datetime,repeat_pattern_id,reminder_end_datetime）
+　　　　　　　　：usersテーブル（id,name,email）
 for(tasks as task){
 	if(通知時刻 && 繰り返し が存在する場合){
 	swtich(){
