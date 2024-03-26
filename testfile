@@ -2,62 +2,62 @@ tasks = tasksテーブルとusersテーブルからデータを取得する。
 取得条件：tasksテーブルからは、通知日時が設定されている && ステータスが「完了」以外 && 通知日時の時刻が現時間と一致する
 データの関連付け：tasksテーブル（id,users_id,title,reminder_datetime,repeat_pattern_id,reminder_end_datetime）
 　　　　　　　　：usersテーブル（id,name,email）
+
 for(tasks as task){
 	if(通知時刻 && 繰り返し が存在する場合){
 	swtich(){
 		case 毎日
-			日付が現在の日付と同じかそれ以降か && 時刻が現在の時刻と一致する場合 
+			日付が現在の日付と同じかそれ以降か 
 			通知Flag = True;
 			break;
 
 		case 平日
-			現在の日付が平日 && 時刻が現在の時刻と一致する場合
+			現在の日付が平日 
 			通知Flag = True
 			break;
 
 		case 週末
-			現在の日付が週末 && 時刻が現在の時間と一致する場合
+			現在の日付が週末 
 			通知Flag = True
 			break;
 
 		case 2週間ごと
 			現時刻と通知時刻を引く
-			出した差分が14で割り切れる && 時刻が現在の時間と一致する場合
+			出した差分が14で割り切れる
 			通知Flag = true;
 			break;
 
 		case 毎週
 			現時刻と通知時刻を引く
-			出した差分が7で割り切れる && 時刻が現在の時間と一致する場合 
+			出した差分が7で割り切れる
 			通知Flag = True
 			break;
 
-        case 毎月
-            通知Flag = 判定関数(引数:通知時刻,1)
-            break;
+        	case 毎月
+            		通知Flag = 判定関数(引数:通知時刻,1)
+            		break;
             
 		case 3か月
-            通知Flag = 判定関数(引数:通知時刻,3)
-            break;
+            		通知Flag = 判定関数(引数:通知時刻,3)
+            		break;
 
 		case 6か月
 			通知Flag = 判定関数(引数:通知時刻6)
-            break;
+           		 break;
 
 		case 毎年
-            通知Flag = 判定関数(引数:通知時刻、12)
-            break;
+            		通知Flag = 判定関数(引数:通知時刻、12)
+            		break;
 	}
 
-	switch(終了日){
-		case: 特定の日付
-			特定の日付が過去の場合
-			通知Flag =　Flase;
+	if(終了日){
+		特定の日付が過去の場合
+		通知Flag =　Flase;
 		    break;
 	}
 
-}通知時刻が存在する場合処理を実行{
-	次回通知時刻が現時刻と合致する場合{
+}else if通知日時が存在する場合{
+	通知日時が現時刻と合致する場合{
 		通知Flag = True
 	}
 }
