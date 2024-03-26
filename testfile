@@ -1,7 +1,14 @@
-tasks = tasksテーブルとusersテーブルからデータを取得する。
-取得条件：tasksテーブルからは、通知日時が設定されている && ステータスが「完了」以外 && 通知日時の時刻が現時間と一致する
-データの関連付け：tasksテーブル（id,users_id,title,reminder_datetime,repeat_pattern_id,reminder_end_datetime）
-　　　　　　　　：usersテーブル（id,name,email）
+
+try{
+	tasks = tasksテーブルとusersテーブルからデータを取得する。
+	取得条件：tasksテーブルからは、通知日時が設定されている && ステータスが「完了」以外 && 通知日時の時刻が現時間と一致する
+	データの関連付け：tasksテーブル（id,users_id,title,reminder_datetime,repeat_pattern_id,reminder_end_datetime）
+　　　　：usersテーブル（id,name,email）
+}catch{
+	
+}
+
+
 
 for(tasks as task){
 	if(通知時刻 && 繰り返し が存在する場合){
@@ -66,12 +73,40 @@ if(通知Flag){
 	メールを送信します
 }
 
-
 function shouldNotify($firstNotificationDate, $repeatMonths) {
     $now = Carbon::now();
     $monthsDifference = ($now->year - $firstNotificationDate->year) * 12 + ($now->month - $firstNotificationDate->month);
     $nextNotificationDate = $firstNotificationDate->copy()->addMonthsNoOverflow($monthsDifference - ($monthsDifference % $repeatMonths));
     
     return $now->eq($nextNotificationDate);
+}
+
+
+
+
+
+class BatchTest extends Command
+{
+
+    protected $signature = 'command:name';
+    protected $description = 'Command description';
+
+    public function __construct()
+    {
+        parent::__construct();
+    }
+
+
+    public function handle()
+    {
+        Log::info('バッチ処理開始');
+
+	try{
+	//バッチ処理の記載
+	Log::info('バッチ処理終了');
+	}catch(\Exception $e){
+	Log::error('バッチエラー発生'.info($e->getMessage());
+	}
+    }
 }
 
