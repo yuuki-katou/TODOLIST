@@ -75,8 +75,3 @@ function shouldNotify($firstNotificationDate, $repeatMonths) {
     return $now->eq($nextNotificationDate);
 }
 
-
-
-■カーネル
-●DBにアクセスする間隔は、1分単位
-
